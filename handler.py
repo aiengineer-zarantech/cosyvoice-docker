@@ -7,12 +7,14 @@ sys.path.append('/workspace/CosyVoice/third_party/Matcha-TTS')
 
 import runpod
 import torch
+import torchaudio
 import soundfile as sf
 import numpy as np
 import base64
 import requests
 import tempfile
 from cosyvoice.cli.cosyvoice import CosyVoice
+from cosyvoice.utils.file_utils import load_wav
 
 print("🧠 Loading pre-cached CosyVoice model...")
 cosyvoice = CosyVoice('iic/CosyVoice-300M')
@@ -28,15 +30,21 @@ def handler(event):
         if not ref_audio_url:
             return {"status": "error", "message": "reference_audio_url is required"}
 
+        print("📥 Downloading reference audio...")
         response = requests.get(ref_audio_url)
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             tmp.write(response.content)
             ref_path = tmp.name
 
+        # FIX: Audio file ko 16kHz PyTorch tensor me load karo
+        prompt_speech_16k = load_wav(ref_path, 16000)
+
+        print(f"🎙️ Generating voice for: '{text[:50]}...'")
+        # FIX: Arguments ko positionally pass karo
         output = cosyvoice.inference_zero_shot(
-            tts_text=text,
-            prompt_text=prompt_text,
-            prompt_speech_16k=ref_path,
+            text,
+            prompt_text,
+            prompt_speech_16k,
             stream=False
         )
 
