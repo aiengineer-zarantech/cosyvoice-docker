@@ -13,11 +13,15 @@ RUN git clone --recursive https://github.com/FunAudioLLM/CosyVoice.git /workspac
 
 WORKDIR /workspace/CosyVoice
 
-# FIX: Setuptools ko <70.0.0 pe pin karo taaki pkg_resources break na ho
-RUN pip install --no-cache-dir "setuptools<70.0.0" wheel cython
+# Pip update karo aur saare build tools & backends system me install karo
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir "setuptools<70.0.0" wheel cython flit_core hatchling poetry-core
 
-# FIX: --no-build-isolation pass karo taaki pinned setuptools hi use ho
-RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
+# FIX 1: Problematic openai-whisper ko pehle hi separately install kar lo
+RUN pip install --no-cache-dir --no-build-isolation openai-whisper
+
+# FIX 2: Ab baaki requirements.txt ko normal mode me install karo (TensorRT aur PyTorch backend solve ho jayega)
+RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir runpod
 
 # Environment path clean set karo
