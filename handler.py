@@ -66,6 +66,7 @@ def handler(event):
         }
 
     except Exception as e:
+        print("Hello world")
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
