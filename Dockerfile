@@ -13,15 +13,15 @@ RUN git clone --recursive https://github.com/FunAudioLLM/CosyVoice.git /workspac
 
 WORKDIR /workspace/CosyVoice
 
-# Build tools update karo pehle (C++ compilation ke liye zaroori hai)
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel cython
+# FIX: Setuptools ko <70.0.0 pe pin karo taaki pkg_resources break na ho
+RUN pip install --no-cache-dir "setuptools<70.0.0" wheel cython
 
-# Python requirements install karo
-RUN pip install --no-cache-dir -r requirements.txt
+# FIX: --no-build-isolation pass karo taaki pinned setuptools hi use ho
+RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
 RUN pip install --no-cache-dir runpod
 
-# Environment path set karo
-ENV PYTHONPATH="/workspace/CosyVoice:/workspace/CosyVoice/third_party/Matcha-TTS:${PYTHONPATH}"
+# Environment path clean set karo
+ENV PYTHONPATH="/workspace/CosyVoice:/workspace/CosyVoice/third_party/Matcha-TTS"
 
 # Model weights pre-download karo (Cold-start speed boost)
 RUN python3 -c "from cosyvoice.cli.cosyvoice import CosyVoice; CosyVoice('iic/CosyVoice-300M')"
