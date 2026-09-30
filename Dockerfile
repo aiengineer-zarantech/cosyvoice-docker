@@ -13,14 +13,17 @@ RUN git clone --recursive https://github.com/FunAudioLLM/CosyVoice.git /workspac
 
 WORKDIR /workspace/CosyVoice
 
-# Pip update karo aur saare build tools & backends system me install karo
+# Build tools install karo
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir "setuptools<70.0.0" wheel cython flit_core hatchling poetry-core
 
-# FIX 1: Problematic openai-whisper ko pehle hi separately install kar lo
-RUN pip install --no-cache-dir --no-build-isolation openai-whisper
+# STEP 1: openai-whisper ko pehle hi without build isolation install kar lo
+RUN pip install --no-cache-dir --no-build-isolation openai-whisper==20231117
 
-# FIX 2: Ab baaki requirements.txt ko normal mode me install karo (TensorRT aur PyTorch backend solve ho jayega)
+# STEP 2: requirements.txt me se openai-whisper line hata do taaki pip use dubara build na kare
+RUN sed -i '/openai-whisper/d' requirements.txt
+
+# STEP 3: Ab baaki requirements clean install ho jayenge
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir runpod
 
